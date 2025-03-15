@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// In-memory storage for tracking events (for demo purposes)
+// In a production environment, this would be stored in a database
+const trackingEvents: Record<string, any[]> = {};
+
 /**
  * GET handler for pixel tracking (email opens)
  * This endpoint returns a 1x1 transparent GIF and logs the email open event
@@ -32,36 +36,20 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    try {
-      // Log the email open event via the Convex API
-      // Using direct fetch to avoid typecasting issues
-      const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
-      if (convexUrl) {
-        await fetch(`${convexUrl}/api/mutation`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            path: 'emailLogs/updateStatus',
-            args: {
-              id: emailId,
-              status: 'opened',
-              metadata: {
-                openedAt: Date.now(),
-                userAgent: request.headers.get('user-agent') || '',
-                ip: request.headers.get('x-forwarded-for') || '',
-              }
-            }
-          }),
-        });
-      } else {
-        console.error('Missing Convex URL in environment variables');
-      }
-    } catch (dbError) {
-      // Log database error but continue serving the pixel
-      console.error('Failed to record email open in database:', dbError);
+    // Log the email open event to our in-memory storage
+    if (!trackingEvents[emailId]) {
+      trackingEvents[emailId] = [];
     }
+    
+    trackingEvents[emailId].push({
+      type: 'opened',
+      timestamp: new Date().toISOString(),
+      userAgent: request.headers.get('user-agent') || '',
+      ip: request.headers.get('x-forwarded-for') || '',
+    });
+    
+    console.log(`Email opened: ${emailId}`);
+    console.log(`Total events for this email: ${trackingEvents[emailId].length}`);
     
     return new NextResponse(TRANSPARENT_GIF_PIXEL, {
       status: 200,
@@ -100,53 +88,61 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing email ID' }, { status: 400 });
     }
     
-    try {
-      // Log the email click event via the Convex API
-      // Using direct fetch to avoid typecasting issues
-      const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
-      if (convexUrl) {
-        await fetch(`${convexUrl}/api/mutation`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            path: 'emailLogs/updateStatus',
-            args: {
-              id: emailId,
-              status: 'clicked',
-              metadata: {
-                clickedAt: Date.now(),
-                linkId,
-                documentId,
-                recipientEmail,
-                userAgent: request.headers.get('user-agent') || '',
-                ip: request.headers.get('x-forwarded-for') || '',
-              }
-            }
-          }),
-        });
-      } else {
-        console.error('Missing Convex URL in environment variables');
-        return NextResponse.json(
-          { success: false, error: 'Server configuration error' },
-          { status: 500 }
-        );
-      }
-    } catch (dbError) {
-      console.error('Failed to record email click in database:', dbError);
-      return NextResponse.json(
-        { success: false, error: 'Database error', details: (dbError as Error).message },
-        { status: 500 }
-      );
+    // Log the email click event to our in-memory storage
+    if (!trackingEvents[emailId]) {
+      trackingEvents[emailId] = [];
     }
+    
+    trackingEvents[emailId].push({
+      type: 'clicked',
+      linkId,
+      documentId,
+      recipientEmail,
+      timestamp: new Date().toISOString(),
+      userAgent: request.headers.get('user-agent') || '',
+      ip: request.headers.get('x-forwarded-for') || '',
+    });
+    
+    console.log(`Email link clicked: ${emailId}, link: ${linkId}`);
+    console.log(`Total events for this email: ${trackingEvents[emailId].length}`);
     
     return NextResponse.json({ 
       success: true,
-      message: 'Click tracked successfully'
+      message: 'Click tracked successfully',
+      events: trackingEvents[emailId]
     });
   } catch (error) {
     console.error('Error tracking email click:', error);
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * GET handler for retrieving tracking events for a specific email
+ * This is for debugging purposes
+ */
+export async function HEAD(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const emailId = searchParams.get('id');
+    
+    if (!emailId) {
+      return NextResponse.json({ success: false, error: 'Missing email ID' }, { status: 400 });
+    }
+    
+    const events = trackingEvents[emailId] || [];
+    
+    return NextResponse.json({ 
+      success: true,
+      emailId,
+      events,
+      count: events.length
+    });
+  } catch (error) {
+    console.error('Error retrieving tracking events:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

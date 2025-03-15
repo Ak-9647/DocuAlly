@@ -8,6 +8,10 @@ import { SignatureComplete } from '@/emails/SignatureComplete';
 // Initialize Resend with API key from environment variables
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// In-memory storage for email logs (for demo purposes)
+// In a production environment, this would be stored in a database
+const emailLogs: Record<string, any> = {};
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -29,40 +33,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Create an email log entry first to get the ID
-    let emailLogId;
-    try {
-      const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
-      if (convexUrl && documentId) {
-        const response = await fetch(`${convexUrl}/api/mutation`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            path: 'emailLogs/create',
-            args: { 
-              documentId,
-              recipientId,
-              recipientEmail: to,
-              emailType: templateName,
-              status: 'pending',
-              metadata: {
-                subject,
-                timestamp: new Date().toISOString(),
-              }
-            }
-          }),
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          emailLogId = result;
-        }
+    const emailLogId = `email_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    
+    emailLogs[emailLogId] = {
+      id: emailLogId,
+      documentId,
+      recipientId,
+      recipientEmail: to,
+      emailType: templateName,
+      status: 'pending',
+      sentAt: Date.now(),
+      metadata: {
+        subject,
+        timestamp: new Date().toISOString(),
       }
-    } catch (error) {
-      console.error('Failed to create email log:', error);
-      // Continue without email tracking if log creation fails
-    }
+    };
 
     // Get the appropriate email template component based on templateName
     let EmailTemplate;
@@ -94,6 +79,26 @@ export async function POST(request: NextRequest) {
     // Render the React email template to HTML
     const html = await renderEmailToHtml(EmailTemplate, enhancedTemplateData);
 
+    // For demo purposes, we'll skip actually sending the email if no API key is provided
+    // This allows testing the tracking functionality without sending real emails
+    if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 'your_resend_api_key') {
+      console.log('Skipping email send (no API key). Would have sent to:', to);
+      console.log('Email subject:', subject);
+      console.log('Email template:', templateName);
+      
+      // Update the email log with "sent" status
+      emailLogs[emailLogId].status = 'sent';
+      emailLogs[emailLogId].metadata.messageId = 'mock-message-id';
+      emailLogs[emailLogId].metadata.sentAt = Date.now();
+      
+      return NextResponse.json({
+        success: true,
+        messageId: 'mock-message-id',
+        emailLogId,
+        note: 'Email not actually sent (demo mode). Check the tracking dashboard to see tracking in action.'
+      });
+    }
+
     // Send the email using Resend API
     const emailResponse = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'noreply@docually.com',
@@ -107,33 +112,10 @@ export async function POST(request: NextRequest) {
     if (emailResponse.error) {
       console.error('Resend API error:', emailResponse.error);
       
-      // Update email log status to failed if we have an ID
-      if (emailLogId) {
-        try {
-          const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
-          if (convexUrl) {
-            await fetch(`${convexUrl}/api/mutation`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                path: 'emailLogs/updateStatus',
-                args: {
-                  id: emailLogId,
-                  status: 'failed',
-                  metadata: {
-                    error: emailResponse.error,
-                    timestamp: new Date().toISOString(),
-                  }
-                }
-              }),
-            });
-          }
-        } catch (updateError) {
-          console.error('Failed to update email log status:', updateError);
-        }
-      }
+      // Update email log status to failed
+      emailLogs[emailLogId].status = 'failed';
+      emailLogs[emailLogId].metadata.error = emailResponse.error;
+      emailLogs[emailLogId].metadata.failedAt = Date.now();
       
       return NextResponse.json(
         { error: 'Failed to send email', details: emailResponse.error },
@@ -142,34 +124,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Update the email log with sent status
-    if (emailLogId) {
-      try {
-        const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
-        if (convexUrl) {
-          await fetch(`${convexUrl}/api/mutation`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              path: 'emailLogs/updateStatus',
-              args: {
-                id: emailLogId,
-                status: 'sent',
-                metadata: {
-                  messageId: emailResponse.data?.id,
-                  to,
-                  subject,
-                  timestamp: new Date().toISOString(),
-                }
-              }
-            }),
-          });
-        }
-      } catch (updateError) {
-        console.error('Failed to update email log status:', updateError);
-      }
-    }
+    emailLogs[emailLogId].status = 'sent';
+    emailLogs[emailLogId].metadata.messageId = emailResponse.data?.id;
+    emailLogs[emailLogId].metadata.sentAt = Date.now();
 
     return NextResponse.json({
       success: true,

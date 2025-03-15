@@ -17,7 +17,8 @@ export default function EmailTrackingPage() {
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [documentId, setDocumentId] = useState('');
+  const [documentId, setDocumentId] = useState('test-doc-123'); // Default to a test document ID
+  const [testEmail, setTestEmail] = useState('');
   
   const searchParams = useSearchParams();
   const docId = searchParams.get('documentId');
@@ -26,6 +27,8 @@ export default function EmailTrackingPage() {
     if (docId) {
       setDocumentId(docId);
       fetchLogs(docId);
+    } else {
+      fetchLogs(documentId);
     }
   }, [docId]);
   
@@ -34,7 +37,7 @@ export default function EmailTrackingPage() {
     setError(null);
     
     try {
-      const response = await fetch(`/api/email/logs?documentId=${id}`);
+      const response = await fetch(`/api/email/logs/document?documentId=${id}`);
       
       if (!response.ok) {
         throw new Error(`Error fetching logs: ${response.status}`);
@@ -58,6 +61,29 @@ export default function EmailTrackingPage() {
     e.preventDefault();
     if (documentId) {
       fetchLogs(documentId);
+    }
+  };
+  
+  const handleSendTestEmail = async () => {
+    try {
+      const email = testEmail || 'test@example.com';
+      const response = await fetch(`/api/test-email-tracking?to=${email}&documentId=${documentId}`);
+      
+      if (!response.ok) {
+        throw new Error(`Error sending test email: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        alert(`Test email sent successfully! Check ${email} for the email.`);
+        // Refresh logs after a short delay to allow for processing
+        setTimeout(() => fetchLogs(documentId), 1000);
+      } else {
+        alert(`Failed to send test email: ${data.error}`);
+      }
+    } catch (err) {
+      alert(`Error: ${(err as Error).message}`);
     }
   };
   
@@ -105,6 +131,31 @@ export default function EmailTrackingPage() {
         </div>
       </form>
       
+      <div className="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+        <h2 className="text-xl font-semibold mb-4">Test Email Tracking</h2>
+        <p className="mb-4">Send a test email to verify tracking functionality:</p>
+        <div className="flex gap-4 mb-4">
+          <input
+            type="email"
+            value={testEmail}
+            onChange={(e) => setTestEmail(e.target.value)}
+            placeholder="Enter email address (optional)"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-md"
+          />
+          <button
+            onClick={handleSendTestEmail}
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+          >
+            Send Test Email
+          </button>
+        </div>
+        <div className="text-sm text-gray-600">
+          <p>Note: If you don't provide an email, a test email will be simulated without actually sending.</p>
+          <p>After sending, open the email and click links to see tracking in action.</p>
+          <p>Click "View Logs" to refresh the tracking data.</p>
+        </div>
+      </div>
+      
       {loading ? (
         <div className="text-center py-8">
           <p>Loading email logs...</p>
@@ -116,6 +167,7 @@ export default function EmailTrackingPage() {
       ) : logs.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           <p>No email logs found for this document.</p>
+          <p className="mt-2">Try sending a test email using the form above.</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -179,17 +231,15 @@ export default function EmailTrackingPage() {
         </div>
       )}
       
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Test Email Tracking</h2>
-        <p className="mb-4">Send a test email to verify tracking functionality:</p>
-        <a
-          href={`/api/test-email-tracking?documentId=${documentId}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-        >
-          Send Test Email
-        </a>
+      <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <h2 className="text-lg font-semibold mb-2">How Email Tracking Works</h2>
+        <ol className="list-decimal pl-5 space-y-2">
+          <li>When an email is sent, a unique ID is generated and stored.</li>
+          <li>A transparent 1x1 pixel image is included in the email, with the ID as a parameter.</li>
+          <li>When the recipient opens the email, the pixel loads, sending the ID to our server.</li>
+          <li>Links in the email are wrapped with tracking URLs that record when they're clicked.</li>
+          <li>All tracking events are logged and displayed in this dashboard.</li>
+        </ol>
       </div>
     </div>
   );

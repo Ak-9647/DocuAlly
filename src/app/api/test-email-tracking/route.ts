@@ -1,67 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * GET handler for testing email tracking
+ * GET handler for sending a test email with tracking
  */
 export async function GET(request: NextRequest) {
   try {
-    // Get test parameters from query string
     const searchParams = request.nextUrl.searchParams;
     const to = searchParams.get('to') || 'test@example.com';
     const documentId = searchParams.get('documentId') || 'test-doc-123';
     
-    // Generate a test sign link
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const signLink = `${baseUrl}/documents/${documentId}/sign`;
+    // Prepare the email data
+    const emailData = {
+      to,
+      subject: 'Test Email Tracking - Please Open',
+      templateName: 'document-invite',
+      templateData: {
+        documentName: 'Test Document',
+        recipientName: to.split('@')[0],
+        signLink: `${process.env.NEXT_PUBLIC_APP_URL}/sign/${documentId}?tracking=true`,
+        expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+        senderName: 'Test Sender',
+        companyName: 'Docually',
+        plainText: `This is a test email for tracking. Please open to trigger tracking pixel.`
+      },
+      documentId,
+      recipientId: `recipient-${Date.now()}`
+    };
     
-    // Send a test email with tracking
-    const response = await fetch(`${baseUrl}/api/email/send`, {
+    // Send the email using our email API
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/email/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        to,
-        subject: 'Test Email Tracking',
-        templateName: 'document-invite',
-        templateData: {
-          recipientName: 'Test User',
-          senderName: 'DocuAlly System',
-          documentName: 'Test Document',
-          signLink,
-          message: 'This is a test email to verify email tracking functionality.',
-        },
-        documentId,
-        recipientId: 'test-recipient-123',
-      }),
+      body: JSON.stringify(emailData),
     });
     
     if (!response.ok) {
       const errorData = await response.json();
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to send test email',
-        details: errorData,
-      }, { status: response.status });
+      throw new Error(`Failed to send email: ${errorData.error || response.statusText}`);
     }
     
     const data = await response.json();
     
     return NextResponse.json({
       success: true,
-      message: 'Test email sent successfully',
-      data,
-      instructions: `
-        1. Check your email at ${to}
-        2. Open the email to trigger the tracking pixel
-        3. Click on links to test click tracking
-        4. View logs at ${baseUrl}/api/email/logs?documentId=${documentId}
-      `,
+      message: `Test email sent to ${to}`,
+      emailLogId: data.emailLogId,
+      note: 'Check your email and open it to trigger tracking events'
     });
   } catch (error) {
     console.error('Error sending test email:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: (error as Error).message },
+      { success: false, error: (error as Error).message },
       { status: 500 }
     );
   }

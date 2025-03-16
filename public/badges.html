@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Badge Examples</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Badge styles */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 9999px;
+      padding: 0.125rem 0.625rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      line-height: 1.25;
+      transition-property: color, background-color, border-color;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 150ms;
+    }
+    .badge-default {
+      background-color: #6366f1;
+      color: white;
+    }
+    .badge-secondary {
+      background-color: #e5e7eb;
+      color: #1f2937;
+    }
+    .badge-destructive {
+      background-color: #ef4444;
+      color: white;
+    }
+    .badge-outline {
+      background-color: transparent;
+      color: #6b7280;
+      border: 1px solid #e5e7eb;
+    }
+    .badge-success {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+    .badge-warning {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    .badge-info {
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+    /* Badge sizes */
+    .badge-sm {
+      height: 1rem;
+      font-size: 0.75rem;
+    }
+    .badge-default-size {
+      height: 1.25rem;
+      font-size: 0.75rem;
+    }
+    .badge-lg {
+      height: 1.5rem;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
+  <div class="container mx-auto py-10 px-4 bg-white rounded-lg shadow">
+    <h1 class="text-3xl font-bold mb-8">Badge Components Gallery</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="border rounded-lg overflow-hidden">
+        <div class="bg-gray-50 border-b px-4 py-5">
+          <h2 class="text-xl font-bold">Basic Badges</h2>
+          <p class="text-gray-500 text-sm">Different variants of the Badge component</p>
+        </div>
+        <div class="p-6 space-y-6">
+          <div class="flex flex-wrap gap-4">
+            <span class="badge badge-default">Default</span>
+            <span class="badge badge-secondary">Secondary</span>
+            <span class="badge badge-destructive">Destructive</span>
+            <span class="badge badge-outline">Outline</span>
+            <span class="badge badge-success">Success</span>
+            <span class="badge badge-warning">Warning</span>
+            <span class="badge badge-info">Info</span>
+          </div>
+          
+          <div>
+            <h3 class="text-lg font-medium mb-3">Badge Sizes</h3>
+            <div class="flex flex-wrap gap-4 items-center">
+              <span class="badge badge-default badge-sm">Small</span>
+              <span class="badge badge-default badge-default-size">Default</span>
+              <span class="badge badge-default badge-lg">Large</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border rounded-lg overflow-hidden">
+        <div class="bg-gray-50 border-b px-4 py-5">
+          <h2 class="text-xl font-bold">Document Status Badges</h2>
+          <p class="text-gray-500 text-sm">Specialized badges for document statuses</p>
+        </div>
+        <div class="p-6 space-y-6">
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center gap-2">
+              <span class="font-medium w-24">Draft:</span>
+              <span class="badge badge-secondary flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span>Draft</span>
+              </span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-medium w-24">Sent:</span>
+              <span class="badge badge-warning flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span>Awaiting Signatures</span>
+              </span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-medium w-24">Completed:</span>
+              <span class="badge badge-success flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                <span>Completed</span>
+              </span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-medium w-24">Custom:</span>
+              <span class="badge badge-default flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <span>Custom</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html> 

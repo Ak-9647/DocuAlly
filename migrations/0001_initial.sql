@@ -1,5 +1,5 @@
 -- Migration number: 0001 	 2025-03-15
--- Not-DocuSign MVP Database Schema
+-- DocuAlly MVP Database Schema
 
 -- Drop existing tables if they exist
 DROP TABLE IF EXISTS counters;

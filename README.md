@@ -1,77 +1,50 @@
-# Not-DocuSign MVP
+# DocuAlly
 
-A simplified document signing platform with AI-powered features, built with Next.js and Tailwind CSS.
+A modern document signing platform with advanced email tracking capabilities.
 
 ## Features
 
-- **Modern UI**: Clean, responsive interface built with Tailwind CSS
-- **Document Management**: Upload, view, and manage documents
-- **AI-Powered Features**: 
-  - Automatic field detection
-  - Document analysis and summary generation
-  - Smart recipient suggestions
-- **Electronic Signatures**: Draw and place signatures on documents
-- **Document Sharing**: Share documents via email or shareable links
-- **User Authentication**: Secure login and registration
+- **Document Management**: Upload, organize, and manage documents for signing
+- **Electronic Signatures**: Secure and legally binding electronic signatures
+- **Email Notifications**: Automated email notifications for document signing workflows
+- **Email Tracking**: Track email opens, clicks, and engagement with comprehensive analytics
+- **User Management**: Invite users, assign roles, and manage permissions
+
+## Email Tracking System
+
+The platform includes a robust email tracking system that:
+
+- Tracks when recipients open emails (via tracking pixel)
+- Monitors link clicks within emails
+- Records all email activities in a Convex database
+- Provides analytics on email engagement
 
 ## Tech Stack
 
-- **Frontend**: Next.js with Tailwind CSS
-- **Backend**: Cloudflare Workers with D1 Database
-- **Authentication**: Client-side auth with secure session management
-- **Storage**: Document storage with preview capabilities
+- **Frontend**: Next.js, React, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: Convex
+- **Email Service**: Resend
+- **Authentication**: Clerk
 
 ## Getting Started
 
-### Prerequisites
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up environment variables
+4. Run the development server: `npm run dev`
 
-- Node.js 18+
-- npm or pnpm
+## Environment Variables
 
-### Installation
+Create a `.env.local` file with the following variables:
 
-1. Clone the repository:
-```bash
-git clone https://github.com/Ak-9647/Not-Docusign.git
-cd Not-Docusign
 ```
-
-2. Install dependencies:
-```bash
-npm install
-# or
-pnpm install
+NEXT_PUBLIC_CONVEX_URL=your_convex_url
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM_EMAIL=your_from_email
 ```
-
-3. Run the development server:
-```bash
-npm run dev
-# or
-pnpm dev
-```
-
-4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
-
-## Project Structure
-
-- `src/app`: Next.js pages and API routes
-- `src/components`: Reusable UI components
-- `src/lib`: Utility functions and authentication
-- `migrations`: Database schema and migrations
-
-## AI Features
-
-The application includes several AI-powered features:
-
-1. **Document Analysis**: Analyzes document content to identify key information
-2. **Field Detection**: Automatically detects where signatures and other fields should be placed
-3. **Document Summary**: Generates summaries of document content with key points
-4. **Recipient Suggestions**: Suggests potential recipients based on document content
-
-## Deployment
-
-The application can be deployed to Cloudflare Pages with Cloudflare Workers for backend functionality.
 
 ## License
 
-This project is licensed under the MIT License.
+MIT

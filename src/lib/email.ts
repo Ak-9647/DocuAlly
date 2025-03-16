@@ -7,6 +7,7 @@ import DocumentInviteEmail from '@/emails/DocumentInvite';
 import SigningReminderEmail from '@/emails/SigningReminder';
 import SignatureCompleteEmail from '@/emails/SignatureComplete';
 import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 // Initialize Resend client for client-side usage
 let resendClient: Resend | null = null;
@@ -30,25 +31,62 @@ function getResendClient(): Resend | null {
 }
 
 /**
- * Renders a React Email template component to HTML
- * 
- * @param Template The React Email template component
- * @param props Props to pass to the template component
+ * Renders a React email component to HTML
+ * @param EmailTemplate The React component to render
+ * @param props Props to pass to the component
  * @returns HTML string of the rendered email
  */
 export async function renderEmailToHtml(
-  Template: React.ComponentType<any>,
+  EmailTemplate: React.ComponentType<any>,
   props: Record<string, any>
 ): Promise<string> {
-  // Create an instance of the email template with the provided props
-  const emailComponent = React.createElement(Template, props);
+  const emailElement = React.createElement(EmailTemplate, props);
+  const html = renderToStaticMarkup(emailElement);
   
-  // Render the component to HTML string
-  const html = render(emailComponent, {
-    pretty: true
-  });
+  // Add additional wrapper HTML and CSS as needed
+  const fullHtml = `<!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <style>
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+          line-height: 1.5;
+          color: #333;
+        }
+        .container {
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        a {
+          color: #0070f3;
+          text-decoration: none;
+        }
+        a:hover {
+          text-decoration: underline;
+        }
+        .footer {
+          margin-top: 32px;
+          font-size: 12px;
+          color: #666;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        ${html}
+        <div class="footer">
+          <p>© ${new Date().getFullYear()} Docually. All rights reserved.</p>
+          <p>This email was sent to ${props.recipientEmail || props.to || 'you'}.</p>
+          <img src="${process.env.NEXT_PUBLIC_APP_URL}/api/email/track?id=${props.emailId}" alt="" width="1" height="1" />
+        </div>
+      </div>
+    </body>
+  </html>`;
   
-  return html;
+  return fullHtml;
 }
 
 /**

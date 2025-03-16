@@ -1,26 +1,24 @@
 import React from 'react';
 
-interface DocumentInviteProps {
+interface SignatureCompleteProps {
   recipientName: string;
   documentName: string;
-  signLink: string;
-  expiryDate: string;
+  viewLink: string;
   senderName: string;
   companyName?: string;
   emailId: string; // For tracking
 }
 
-export const DocumentInvite: React.FC<DocumentInviteProps> = ({
+export const SignatureComplete: React.FC<SignatureCompleteProps> = ({
   recipientName,
   documentName,
-  signLink,
-  expiryDate,
+  viewLink,
   senderName,
   companyName = 'Docually',
   emailId
 }) => {
   // We'll add the tracking query param to links
-  const trackingLink = `${signLink}${signLink.includes('?') ? '&' : '?'}emailId=${emailId}`;
+  const trackingLink = `${viewLink}${viewLink.includes('?') ? '&' : '?'}emailId=${emailId}`;
 
   return (
     <div style={{
@@ -34,10 +32,10 @@ export const DocumentInvite: React.FC<DocumentInviteProps> = ({
         <h1 style={{ 
           fontSize: '24px', 
           fontWeight: 'bold',
-          color: '#2563eb',
+          color: '#10b981',
           marginBottom: '16px',
         }}>
-          Document Ready for Signing
+          Document Successfully Signed
         </h1>
         
         <p style={{ fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
@@ -45,11 +43,7 @@ export const DocumentInvite: React.FC<DocumentInviteProps> = ({
         </p>
         
         <p style={{ fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
-          You have been invited to sign the document <strong>"{documentName}"</strong>.
-        </p>
-        
-        <p style={{ fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
-          This document will expire on <strong>{expiryDate}</strong>, so please sign it before then.
+          Great news! The document <strong>"{documentName}"</strong> has been successfully signed by all parties.
         </p>
         
         <div style={{ marginTop: '32px', marginBottom: '32px', textAlign: 'center' }}>
@@ -58,7 +52,7 @@ export const DocumentInvite: React.FC<DocumentInviteProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              backgroundColor: '#2563eb',
+              backgroundColor: '#10b981',
               color: 'white',
               padding: '12px 24px',
               borderRadius: '4px',
@@ -73,17 +67,17 @@ export const DocumentInvite: React.FC<DocumentInviteProps> = ({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   emailId,
-                  linkId: 'sign-document-button',
+                  linkId: 'view-document-button',
                 }),
               }).catch(console.error);
             }}
           >
-            Sign Document Now
+            View Completed Document
           </a>
         </div>
         
         <p style={{ fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
-          If you have any questions, please contact the sender directly.
+          A copy of the signed document has been saved and is available for your records.
         </p>
         
         <p style={{ fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>

@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface DocumentInviteProps {
+interface SigningReminderProps {
   recipientName: string;
   documentName: string;
   signLink: string;
@@ -10,7 +10,7 @@ interface DocumentInviteProps {
   emailId: string; // For tracking
 }
 
-export const DocumentInvite: React.FC<DocumentInviteProps> = ({
+export const SigningReminder: React.FC<SigningReminderProps> = ({
   recipientName,
   documentName,
   signLink,
@@ -34,10 +34,10 @@ export const DocumentInvite: React.FC<DocumentInviteProps> = ({
         <h1 style={{ 
           fontSize: '24px', 
           fontWeight: 'bold',
-          color: '#2563eb',
+          color: '#f59e0b',
           marginBottom: '16px',
         }}>
-          Document Ready for Signing
+          Reminder: Document Awaiting Your Signature
         </h1>
         
         <p style={{ fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
@@ -45,11 +45,11 @@ export const DocumentInvite: React.FC<DocumentInviteProps> = ({
         </p>
         
         <p style={{ fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
-          You have been invited to sign the document <strong>"{documentName}"</strong>.
+          This is a friendly reminder that the document <strong>"{documentName}"</strong> is still waiting for your signature.
         </p>
         
         <p style={{ fontSize: '16px', lineHeight: '1.5', marginBottom: '16px' }}>
-          This document will expire on <strong>{expiryDate}</strong>, so please sign it before then.
+          The document will expire on <strong>{expiryDate}</strong>, so please sign it before then.
         </p>
         
         <div style={{ marginTop: '32px', marginBottom: '32px', textAlign: 'center' }}>
@@ -58,7 +58,7 @@ export const DocumentInvite: React.FC<DocumentInviteProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              backgroundColor: '#2563eb',
+              backgroundColor: '#f59e0b',
               color: 'white',
               padding: '12px 24px',
               borderRadius: '4px',
@@ -73,7 +73,7 @@ export const DocumentInvite: React.FC<DocumentInviteProps> = ({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   emailId,
-                  linkId: 'sign-document-button',
+                  linkId: 'sign-document-reminder-button',
                 }),
               }).catch(console.error);
             }}
@@ -101,7 +101,7 @@ export const DocumentInvite: React.FC<DocumentInviteProps> = ({
         color: '#666',
       }}>
         <p>
-          This is an automated message from {companyName}. Please do not reply to this email.
+          This is an automated reminder from {companyName}. Please do not reply to this email.
         </p>
       </div>
     </div>
